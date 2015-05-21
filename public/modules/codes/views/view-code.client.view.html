@@ -1,7 +1,7 @@
 <section data-ng-controller="CodesController" data-ng-init="findOne()">
 	<div class="page-header">
 		<p data-ng-bind="code.description"></p>
-		<pre><code data-ng-bind="code.code"></code></pre>
+		<div hljs source="code.code"></div>
 	</div>
 	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == code.user._id))">
 		<a class="btn btn-primary" href="/#!/codes/{{code._id}}/edit">
