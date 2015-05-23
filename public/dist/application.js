@@ -4,7 +4,7 @@
 var ApplicationConfiguration = (function() {
 	// Init module configuration options
 	var applicationModuleName = 'code-snippets';
-	var applicationModuleVendorDependencies = ['ngResource', 'ngCookies',  'ngAnimate',  'ngTouch',  'ngSanitize',  'ui.router', 'ui.bootstrap', 'ui.utils'];
+	var applicationModuleVendorDependencies = ['ngResource', 'ngCookies',  'ngAnimate',  'ngTouch',  'ngSanitize',  'ui.router', 'ui.bootstrap', 'ui.utils', 'hljs'];
 
 	// Add a new vertical module
 	var registerModule = function(moduleName, dependencies) {
@@ -43,12 +43,133 @@ angular.element(document).ready(function() {
 });
 'use strict';
 
+// Use applicaion configuration module to register a new module
+ApplicationConfiguration.registerModule('codes');
+'use strict';
+
 // Use Applicaion configuration module to register a new module
 ApplicationConfiguration.registerModule('core');
 'use strict';
 
 // Use Applicaion configuration module to register a new module
 ApplicationConfiguration.registerModule('users');
+'use strict';
+
+// Configuring the Articles module
+angular.module('codes').run(['Menus',
+	function(Menus) {
+		// Set top bar menu items
+		Menus.addMenuItem('topbar', 'Codes', 'codes', 'dropdown', '/codes(/create)?');
+		Menus.addSubMenuItem('topbar', 'codes', 'List Codes', 'codes');
+		Menus.addSubMenuItem('topbar', 'codes', 'New Code', 'codes/create');
+	}
+]);
+'use strict';
+
+//Setting up route
+angular.module('codes').config(['$stateProvider',
+	function($stateProvider) {
+		// Codes state routing
+		$stateProvider.
+		state('listCodes', {
+			url: '/codes',
+			templateUrl: 'modules/codes/views/list-codes.client.view.html'
+		}).
+		state('createCode', {
+			url: '/codes/create',
+			templateUrl: 'modules/codes/views/create-code.client.view.html'
+		}).
+		state('viewCode', {
+			url: '/codes/:codeId',
+			templateUrl: 'modules/codes/views/view-code.client.view.html'
+		}).
+		state('editCode', {
+			url: '/codes/:codeId/edit',
+			templateUrl: 'modules/codes/views/edit-code.client.view.html'
+		});
+	}
+]);
+'use strict';
+
+// Codes controller
+angular.module('codes').controller('CodesController', ['$scope', '$stateParams', '$location', 'Authentication', 'Codes',
+	function($scope, $stateParams, $location, Authentication, Codes) {
+		$scope.authentication = Authentication;
+
+		// Create new Code
+		$scope.create = function() {
+			// Create new Code object
+			var code = new Codes ({
+				description: this.description,
+				code: this.code
+			});
+
+			// Redirect after save
+			code.$save(function(response) {
+				$location.path('codes/' + response._id);
+
+				// Clear form fields
+				$scope.description = '';
+				$scope.code = '';
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		// Remove existing Code
+		$scope.remove = function(code) {
+			if ( code ) { 
+				code.$remove();
+
+				for (var i in $scope.codes) {
+					if ($scope.codes [i] === code) {
+						$scope.codes.splice(i, 1);
+					}
+				}
+			} else {
+				$scope.code.$remove(function() {
+					$location.path('codes');
+				});
+			}
+		};
+
+		// Update existing Code
+		$scope.update = function() {
+			var code = $scope.code;
+
+			code.$update(function() {
+				$location.path('codes/' + code._id);
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		// Find a list of Codes
+		$scope.find = function() {
+			$scope.codes = Codes.query();
+		};
+
+		// Find existing Code
+		$scope.findOne = function() {
+			$scope.code = Codes.get({ 
+				codeId: $stateParams.codeId
+			});
+		};
+	}
+]);
+'use strict';
+
+//Codes service used to communicate Codes REST endpoints
+angular.module('codes').factory('Codes', ['$resource',
+	function($resource) {
+		return $resource('codes/:codeId', { codeId: '@_id'
+		}, {
+			update: {
+				method: 'PUT'
+			}
+		});
+	}
+]);
 'use strict';
 
 // Setting up route
@@ -255,7 +376,7 @@ angular.module('core').service('Menus', [
 		};
 
 		//Adding the topbar menu
-		this.addMenu('topbar');
+		this.addMenu('topbar', true);
 	}
 ]);
 'use strict';
