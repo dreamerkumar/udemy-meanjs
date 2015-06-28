@@ -1,6 +1,6 @@
 A simple meanjs application created as part of Udemy course
 [Course Link] (https://www.udemy.com/javascript-based-website-in-minutes-using-the-mean-stack)
-[![MEAN.JS Logo](http://meanjs.org/img/logo-small.png)](http://meanjs.org/)
+
 
 [![Build Status](https://travis-ci.org/meanjs/mean.svg?branch=master)](https://travis-ci.org/meanjs/mean)
 [![Dependencies Status](https://david-dm.org/meanjs/mean.svg)](https://david-dm.org/meanjs/mean)
